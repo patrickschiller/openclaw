@@ -37,6 +37,7 @@ import {
   type SessionSourceAssertion,
 } from "../config/sessions/session-source-authority.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
+import { hasInternalHookListeners } from "../hooks/internal-hooks.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { isPathInside } from "../infra/path-guards.js";
 import {
@@ -472,6 +473,8 @@ export async function prepareSessionWorktree(params: {
       // Nested cwd discovery also retains complete checkout as its prompt boundary.
       ...(params.onPromptReady &&
       !sandboxRequired &&
+      // Bootstrap hooks can read configured or custom paths outside the prepared files.
+      !hasInternalHookListeners("agent", "bootstrap") &&
       repository &&
       workspace === repository.sourceRoot
         ? {
@@ -600,7 +603,7 @@ export async function prepareSessionWorktreeCreation(params: {
   onTitleError: (error: unknown) => void;
   onTitlePersisted: () => void;
 }): ReturnType<PrepareGatewaySessionLifecycle> {
-  const { cfg, target: lifecycleTarget, signal, commitGuard } = params;
+  const { cfg, target: lifecycleTarget, signal, commitGuard, name, baseRef } = params;
   commitGuard();
   const acceptedWorktree = params.inheritParentKey ? lifecycleTarget.entry?.worktree : undefined;
   const acceptedPending = params.inheritParentKey
@@ -640,8 +643,6 @@ export async function prepareSessionWorktreeCreation(params: {
     acceptedPending?.workspace ??
     inheritedSource?.workspace ??
     resolveAgentWorkspaceDir(cfg, lifecycleTarget.agentId);
-  const name = params.name;
-  const baseRef = params.baseRef;
   if (withSource) {
     await withSource((current) => {
       commitGuard();
@@ -690,7 +691,6 @@ export async function prepareSessionWorktreeCreation(params: {
       },
     };
   }
-  const source = params.titleSource;
   // Empty creates have no persisted generation until the lifecycle owner commits.
   const title =
     !name && !params.label && lifecycleTarget.entry && lifecycleTarget.titleModelSelection !== null
@@ -705,7 +705,7 @@ export async function prepareSessionWorktreeCreation(params: {
           sessionKey: lifecycleTarget.key,
           storePath: lifecycleTarget.storePath,
           currentUserMessage: params.currentUserMessage,
-          userMessage: source,
+          userMessage: params.titleSource,
           commitGuard,
           withSource,
           onError: params.onTitleError,
@@ -726,8 +726,5 @@ export async function prepareSessionWorktreeCreation(params: {
     withSource,
     withRollback: inheritedSource?.withRollback,
   });
-  if (prepared.ok) {
-    return ok({ ...prepared.value, ...(withCommit ? { withCommit } : {}) });
-  }
-  return prepared;
+  return prepared.ok ? ok({ ...prepared.value, ...(withCommit ? { withCommit } : {}) }) : prepared;
 }
