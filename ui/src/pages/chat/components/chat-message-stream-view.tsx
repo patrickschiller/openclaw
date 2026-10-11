@@ -50,6 +50,7 @@ type StreamMessageOptions = Pick<
   | "sessionKey"
   | "presented"
   | "boardProvider"
+  | "widgetLayout"
   | "agentId"
   | "runActive"
   | "asyncQuestions"
