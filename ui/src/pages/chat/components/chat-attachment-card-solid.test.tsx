@@ -4,7 +4,7 @@ import { createSignal } from "solid-js";
 import { expect, it, vi } from "vitest";
 import { mountSolid } from "../../../test-helpers/mount-solid.ts";
 import { flush } from "../../../test-helpers/solid-settle.ts";
-import { CompactAttachmentCard, AttachmentCardHeader } from "./chat-attachment-card-solid.tsx";
+import { CompactAttachmentCard } from "./chat-attachment-card-solid.tsx";
 
 it("keeps downloads separate from opening the attachment, including detached SVG targets", () => {
   const open = vi.fn();
@@ -34,7 +34,7 @@ it("updates pending download links and file metadata without replacing the card"
   const [pending, setPending] = createSignal(true);
   const [label, setLabel] = createSignal("report.pdf");
   const view = mountSolid(() => (
-    <AttachmentCardHeader
+    <CompactAttachmentCard
       kind="document"
       label={label()}
       mimeType="application/pdf"

@@ -29,7 +29,7 @@ type SvgAttachmentProps = {
 
 type ChatSvgAttachmentElement = SolidBridgeElement<SvgAttachmentProps>;
 
-export const ChatSvgAttachment = defineSolidBridge<SvgAttachmentProps>(
+defineSolidBridge<SvgAttachmentProps>(
   "openclaw-chat-svg-attachment",
   (props, host) => {
     const [renderSource, setRenderSource] = createSignal<SvgRenderSource>();

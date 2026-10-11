@@ -1,6 +1,5 @@
 /* @vitest-environment jsdom */
 import { Blob as NodeBlob } from "node:buffer";
-import { createComponent } from "solid-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createDeferred } from "../../../../../test/helpers/promise.js";
 import type { GatewayBrowserClient } from "../../../api/gateway.ts";
@@ -17,7 +16,7 @@ import type {
   ToolOutputSidebarContent,
 } from "./chat-sidebar-content-types.ts";
 import { renderToolCard } from "./chat-tool-cards.ts";
-import { ChatToolOutput } from "./chat-tool-output.ts";
+import "./chat-tool-output.ts";
 import { renderToolFixture } from "./chat-tool-render.test-support.ts";
 
 type Panel = HTMLElement & {
@@ -111,11 +110,9 @@ describe("tool output inspection", () => {
     "keeps content-shaped data literal without native Code Mode input: %o",
     async ({ name, args }) => {
       const text = '[{"type":"input_text","text":"literal value"}]';
-      const view = mountSolid(() =>
-        createComponent(ChatToolOutput, {
-          content: { kind: "tool-output", card: outputCard({ name, args, outputText: text }) },
-        }),
-      );
+      const panel = document.createElement("openclaw-chat-tool-output") as Panel;
+      panel.content = { kind: "tool-output", card: outputCard({ name, args, outputText: text }) };
+      const view = mountSolid(() => panel);
       await waitForSolid(() =>
         expect(view.container.querySelector(".chat-tool-output__text")?.textContent).toBe(text),
       );

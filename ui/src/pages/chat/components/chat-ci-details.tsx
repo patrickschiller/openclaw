@@ -303,7 +303,6 @@ class ChatCiDetailsController extends ChatCiDisclosure {
   }
 }
 
-export type ChatCiDetailsElement = SolidBridgeElement<ChatCiDisclosureProps>;
 function ChatCiDetailsContent(
   props: ChatCiDisclosureProps,
   host: SolidBridgeElement<ChatCiDisclosureProps>,
@@ -499,3 +498,9 @@ defineSolidBridge<ChatCiDisclosureProps>("openclaw-chat-ci-details", ChatCiDetai
     presented: { default: true, type: Boolean },
   },
 });
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "openclaw-chat-ci-details": SolidBridgeElement<ChatCiDisclosureProps>;
+  }
+}

@@ -302,6 +302,8 @@ export async function verifyGatewayMemoryWatcherRestart(
   const releaseStartup = createDeferredCore();
   let reloading: Promise<unknown> | undefined;
   let independent: ReturnType<typeof createPluginRegistry> | undefined;
+  let memoryServiceStopStarted = false;
+  let recoveryAfterServiceStop = false;
   const recoveryFailure = new Error("memory reload checkpoint failed");
   const registerProvider = (api: OpenClawPluginApi, current: number) =>
     api.registerEmbeddingProvider({
@@ -327,6 +329,8 @@ export async function verifyGatewayMemoryWatcherRestart(
       abortOnCandidateStart: providerState === "rollback",
       checkpoint: async () => {
         if (recovery && recovery.failure !== "before-drain" && subscriptions[0]?.signal.aborted) {
+          // Watcher shutdown can become visible before or after service stopping.
+          recoveryAfterServiceStop = memoryServiceStopStarted;
           throw recoveryFailure;
         }
       },
@@ -369,7 +373,10 @@ export async function verifyGatewayMemoryWatcherRestart(
               }
             }
           },
-          stop: () => runtime.closeAllMemorySearchManagers?.(),
+          stop: () => {
+            memoryServiceStopStarted = true;
+            return runtime.closeAllMemorySearchManagers?.();
+          },
         });
       },
     });
@@ -452,7 +459,8 @@ export async function verifyGatewayMemoryWatcherRestart(
       await Promise.resolve();
       expect(settled, "Reload must join memory service startup").toBe(false);
       expect(fixture.owner.getReloadStatus()).toMatchObject({
-        phase: providerState === "rollback" ? "recovering" : "reloading",
+        phase:
+          providerState === "rollback" || recoveryAfterServiceStop ? "recovering" : "reloading",
       });
       releaseStartup.resolve();
     }

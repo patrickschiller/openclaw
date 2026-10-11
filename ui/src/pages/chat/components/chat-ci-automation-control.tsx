@@ -357,8 +357,6 @@ class ChatCiAutomationController extends ChatCiDisclosure<Props> {
   }
 }
 
-export type ChatCiAutomationElement = SolidBridgeElement<Props>;
-
 function ChatCiAutomationContent(props: Props, host: SolidBridgeElement<Props>) {
   const [revision, setRevision] = createSignal(0, { ownedWrite: true });
   const model = new ChatCiAutomationController(host, host, () => setRevision((value) => value + 1));
@@ -386,3 +384,9 @@ defineSolidBridge<Props>("openclaw-chat-ci-automation", ChatCiAutomationContent,
     presented: { default: true, type: Boolean },
   },
 });
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "openclaw-chat-ci-automation": SolidBridgeElement<Props>;
+  }
+}

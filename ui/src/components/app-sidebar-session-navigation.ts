@@ -18,7 +18,6 @@ import {
   sessionNavigationTarget,
 } from "../lib/sessions/route-navigation.ts";
 import {
-  areUiSessionKeysEquivalent,
   buildAgentMainSessionKey,
   normalizeAgentId,
   resolveUiDefaultAgentId,
@@ -54,6 +53,8 @@ import {
   projectSidebarVisibleMainSession,
   resolveActiveSidebarAgent,
   resolveLatestSidebarAgentSession,
+  resolveSidebarAgentSessionResult,
+  resolveSidebarMainSessionRow,
   resolveSidebarMainSessionKey,
   toggleSidebarSessionSelection,
   type SidebarSessionNavigationState,
@@ -698,13 +699,7 @@ export class AppSidebarSessionNavigationElement extends AppSidebarBase {
   }
 
   private selectedAgentSessionResult(): SessionsListResult | null {
-    if (this.groupedSessionSource) {
-      return this.groupedSessionSource.result;
-    }
-    const selected = this.expandedAgentId();
-    return selected === normalizeAgentId(this.sessionData.sessionsAgentId ?? "")
-      ? this.sessionData.sessionsResult
-      : (this.sessionData.sessionResultsByAgent[selected] ?? null);
+    return resolveSidebarAgentSessionResult(this);
   }
 
   selectedAgentMainSessionKey(agentId?: string): string {
@@ -735,19 +730,7 @@ export class AppSidebarSessionNavigationElement extends AppSidebarBase {
 
   /** Gateway row backing the identity card (unread/running state), if loaded. */
   mainSessionRow(agentId?: string): GatewaySessionRow | null {
-    const normalized = normalizeAgentId(agentId ?? this.expandedAgentId());
-    const mainKey = this.selectedAgentMainSessionKey(normalized);
-    const rows =
-      this.groupedSessionSource?.result?.sessions ??
-      (normalized === normalizeAgentId(this.sessionData.sessionsAgentId ?? "")
-        ? (this.sessionData.sessionsResult?.sessions ?? [])
-        : (this.sessionData.sessionResultsByAgent[normalized]?.sessions ?? []));
-    const lineage = this.sessionData.activeSessionLineageRoot;
-    return (
-      (lineage ? [...rows, lineage] : rows).find((row) =>
-        areUiSessionKeysEquivalent(row.key, mainKey),
-      ) ?? null
-    );
+    return resolveSidebarMainSessionRow(this, agentId);
   }
 
   /** Identity-card click: the agent's rolling main session, or Settings offline. */
