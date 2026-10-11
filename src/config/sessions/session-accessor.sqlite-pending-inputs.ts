@@ -19,10 +19,6 @@ import { hasSessionPendingInputsSchema } from "../../state/openclaw-agent-pendin
 import { getSessionKysely, type ResolvedTranscriptScope } from "./session-accessor.sqlite-scope.js";
 import { readSessionActorTransactionState } from "./session-actor-transaction.js";
 import type { SessionPendingInputAuthorityFacts } from "./session-pending-input-authority.js";
-import {
-  isFinalInputCompletion,
-  parseSessionPendingInputMessage,
-} from "./session-pending-input-codec.js";
 import { SessionPendingInputCustodyError } from "./session-pending-input-custody-error.js";
 import {
   isFinalInputCompletion,
@@ -36,12 +32,6 @@ import type {
   SessionPendingInputAppend,
   SessionInputCompletion,
 } from "./session-pending-input.types.js";
-
-export {
-  isFinalInputCompletion,
-  parseSessionPendingInputMessage,
-  projectSessionPendingInput,
-} from "./session-pending-input-codec.js";
 
 type PendingInputDatabase = Pick<OpenClawAgentDatabase, "db" | "path">;
 
